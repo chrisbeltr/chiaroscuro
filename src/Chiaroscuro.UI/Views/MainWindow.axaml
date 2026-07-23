@@ -38,11 +38,11 @@
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Date" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <DatePicker Grid.Row="2" Grid.Column="1" Margin="0,0,0,4"
-                                        SelectedDate="{Binding Date}" />
+                                        SelectedDate="{Binding Date}" HorizontalAlignment="Stretch" />
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="Time" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <TimePicker Grid.Row="3" Grid.Column="1" Margin="0,0,0,4"
-                                        SelectedTime="{Binding TimeOfDay}" />
+                                        SelectedTime="{Binding TimeOfDay}" HorizontalAlignment="Stretch" />
 
                             <TextBlock Grid.Row="4" Grid.Column="0" Text="UTC Offset (h)" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <NumericUpDown Grid.Row="4" Grid.Column="1"
