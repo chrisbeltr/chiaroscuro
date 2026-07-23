@@ -1,0 +1,12 @@
+# .NET build output
+bin/
+obj/
+
+# Rider / IntelliJ project files (machine-specific)
+.idea/
+
+# Claude Code local (machine-specific permissions, not shared project config)
+.claude/settings.local.json
+
+# OS cruft
+.DS_Store
