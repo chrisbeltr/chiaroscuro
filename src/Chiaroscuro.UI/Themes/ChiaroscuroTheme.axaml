@@ -17,7 +17,7 @@
 
         <!-- Body text color: not specified by SPEC.md, chosen here for readable
              high-contrast text against the deep purple background. -->
-        <Color x:Key="ChiaroscuroForegroundColor">#E8E6F5</Color>
+        <Color x:Key="ChiaroscuroForegroundColor">#9491C0</Color>
 
         <Color x:Key="ChiaroscuroAmberColor">#F59E0B</Color>
         <Color x:Key="ChiaroscuroGoldColor">#FBBF24</Color>
