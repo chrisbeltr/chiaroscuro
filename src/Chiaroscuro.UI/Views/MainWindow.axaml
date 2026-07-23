@@ -18,9 +18,9 @@
 
     <!-- Two columns: a fixed-width scrollable parameter panel on the left, and the
          (for now, text-only - the 3D viewport arrives in Phase 3) result area on the right. -->
-    <Grid ColumnDefinitions="450,*">
+    <Grid ColumnDefinitions="*,6,*">
 
-        <ScrollViewer Grid.Column="0" Margin="12">
+        <ScrollViewer Grid.Column="0" Margin="12, 12, 3, 12">
             <StackPanel Spacing="12">
 
                 <Border Classes="panel" Padding="12">
@@ -102,8 +102,10 @@
 
             </StackPanel>
         </ScrollViewer>
+        
+        <GridSplitter Grid.Column="1" ResizeDirection="Columns" />
 
-        <Border Grid.Column="1" Classes="panel" Margin="0,12,12,12" Padding="16">
+        <Border Grid.Column="2" Classes="panel" Margin="3,12,12,12" Padding="16">
             <TextBlock Text="{Binding ResultText}" TextWrapping="Wrap" VerticalAlignment="Top" />
         </Border>
 
