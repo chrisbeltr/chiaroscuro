@@ -21,6 +21,7 @@
 
         <Color x:Key="ChiaroscuroAmberColor">#F59E0B</Color>
         <Color x:Key="ChiaroscuroGoldColor">#FBBF24</Color>
+        <Color x:Key="ChiaroscuroGoldBackgroundColor">#402E00</Color>
         <Color x:Key="ChiaroscuroSunYellowColor">#FDE047</Color>
 
         <SolidColorBrush x:Key="ChiaroscuroBackgroundBrush" Color="{StaticResource ChiaroscuroBackgroundColor}" />
@@ -29,6 +30,7 @@
         <SolidColorBrush x:Key="ChiaroscuroForegroundBrush" Color="{StaticResource ChiaroscuroForegroundColor}" />
         <SolidColorBrush x:Key="ChiaroscuroAmberBrush" Color="{StaticResource ChiaroscuroAmberColor}" />
         <SolidColorBrush x:Key="ChiaroscuroGoldBrush" Color="{StaticResource ChiaroscuroGoldColor}" />
+        <SolidColorBrush x:Key="ChiaroscuroGoldBackgroundBrush" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
         <SolidColorBrush x:Key="ChiaroscuroSunYellowBrush" Color="{StaticResource ChiaroscuroSunYellowColor}" />
     </Styles.Resources>
 
@@ -37,6 +39,13 @@
         <Setter Property="Background" Value="{DynamicResource ChiaroscuroBackgroundBrush}" />
     </Style>
     <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroForegroundBrush}" />
+    </Style>
+    <Style Selector="NumericUpDown, DatePicker, TimePicker, ComboBox">
+        <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroForegroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ChiaroscuroBorderBrush}"/>
+    </Style>
+    <Style Selector="NumericUpDown PathIcon">
         <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroForegroundBrush}" />
     </Style>
 
