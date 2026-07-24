@@ -22,8 +22,16 @@ public static class SceneBuilder
 
         if (illumination is { } hit)
         {
+            // The cone keeps using the raw, unclipped projection - splitting it across
+            // surfaces too is out of scope for this fix (see the design doc). Only the
+            // filled landing patch respects the physically-clipped, possibly-multi-surface
+            // shape.
             AddLightCone(primitives, window.GetCorners(room), hit.IlluminatedPolygon);
-            primitives.Add(new ScenePolygon(hit.IlluminatedPolygon, LandingPatchColor));
+
+            foreach (var patch in hit.Patches)
+            {
+                primitives.Add(new ScenePolygon(patch.Polygon, LandingPatchColor));
+            }
         }
 
         return primitives;

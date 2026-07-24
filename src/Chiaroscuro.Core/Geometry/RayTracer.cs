@@ -13,8 +13,25 @@ using Chiaroscuro.Core.Solar;
 /// <param name="IlluminatedPolygon">
 /// The window's four corners, each projected along the light direction onto the target
 /// surface - the actual shape/position of the light patch (spec §3.2's "Aperture Projection").
+/// This is the RAW, unclipped projection: it can extend past the target surface's real
+/// physical bounds near a room edge/corner. It's kept exactly as-is (rather than clipped)
+/// because <c>Chiaroscuro.UI</c>'s light-cone rendering relies on it always having exactly
+/// 4 corners in the same order as <see cref="Window.GetCorners"/>. Use <see cref="Patches"/>
+/// for the physically-accurate, in-bounds shape.
 /// </param>
-public readonly record struct IlluminationResult(RoomSurface Surface, Vector3 CenterPoint, Vector3[] IlluminatedPolygon);
+/// <param name="Patches">
+/// The physically-accurate landing shape: one or more <see cref="LandingPatch"/>es whose
+/// polygons together cover the same light patch as <see cref="IlluminatedPolygon"/>, but
+/// each strictly clipped to its own surface's real bounds - any part that would spill past
+/// a surface's edge is re-projected onto whichever neighboring surface it actually lands
+/// on (see <see cref="IlluminationPatchClipper"/>). In the common case (no spillover) this
+/// is a single entry shaped like <see cref="IlluminatedPolygon"/>.
+/// </param>
+public readonly record struct IlluminationResult(
+    RoomSurface Surface,
+    Vector3 CenterPoint,
+    Vector3[] IlluminatedPolygon,
+    IReadOnlyList<LandingPatch> Patches);
 
 /// <summary>A single, physically-real piece of a light patch confined to one room surface.
 /// See <see cref="IlluminationResult.Patches"/> (added in a later step) and
@@ -48,15 +65,22 @@ public static class RayTracer
         }
 
         var targetPlane = room.GetPlane(nearestHit.Surface);
+        var windowCorners = window.GetCorners(room);
 
         // Project every window corner along the same light direction onto the same
         // plane the center point landed on - together these four points form the
         // illuminated polygon spec §3.2 calls for.
-        var illuminatedPolygon = window.GetCorners(room)
+        var illuminatedPolygon = windowCorners
             .Select(corner => ProjectOntoPlane(corner, lightDirection, targetPlane))
             .ToArray();
 
-        return new IlluminationResult(nearestHit.Surface, nearestHit.Point, illuminatedPolygon);
+        // The raw projection above can spill past the target surface's real edges near a
+        // room corner - IlluminationPatchClipper re-derives the physically-correct shape,
+        // continuing any spillover onto whichever surface it actually lands on.
+        var patches = IlluminationPatchClipper.Clip(
+            room, nearestHit.Surface, window.Wall, windowCorners, illuminatedPolygon, lightDirection);
+
+        return new IlluminationResult(nearestHit.Surface, nearestHit.Point, illuminatedPolygon, patches);
     }
 
     /// <summary>

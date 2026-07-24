@@ -15,6 +15,11 @@ public class SceneBuilderTests
         new Vector3(0.6, -1.0, 0), new Vector3(-0.6, -1.0, 0),
     ];
 
+    private static readonly IReadOnlyList<LandingPatch> TestPatches =
+    [
+        new LandingPatch(RoomSurface.Floor, TestIlluminatedPolygon),
+    ];
+
     [Fact]
     public void Build_WithNoIllumination_OnlyEmitsWireframeLines()
     {
@@ -28,7 +33,7 @@ public class SceneBuilderTests
     [Fact]
     public void Build_WithIllumination_AlsoEmitsFourLightConeFacesAndOneLandingPatch()
     {
-        var illumination = new IlluminationResult(RoomSurface.Floor, new Vector3(0, -1.75, 0), TestIlluminatedPolygon);
+        var illumination = new IlluminationResult(RoomSurface.Floor, new Vector3(0, -1.75, 0), TestIlluminatedPolygon, TestPatches);
 
         var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination);
 
@@ -40,7 +45,7 @@ public class SceneBuilderTests
     public void Build_LightConeFaces_ConnectMatchingWindowAndLandingCorners()
     {
         var windowCorners = TestWindow.GetCorners(TestRoom);
-        var illumination = new IlluminationResult(RoomSurface.Floor, new Vector3(0, -1.75, 0), TestIlluminatedPolygon);
+        var illumination = new IlluminationResult(RoomSurface.Floor, new Vector3(0, -1.75, 0), TestIlluminatedPolygon, TestPatches);
 
         var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination);
 
@@ -48,5 +53,26 @@ public class SceneBuilderTests
         Assert.Equal(
             new[] { windowCorners[0], windowCorners[1], TestIlluminatedPolygon[1], TestIlluminatedPolygon[0] },
             firstFace.Corners);
+    }
+
+    [Fact]
+    public void Build_WithMultiplePatches_EmitsOneScenePolygonPerPatch()
+    {
+        IReadOnlyList<LandingPatch> twoPatches =
+        [
+            new LandingPatch(RoomSurface.Floor, TestIlluminatedPolygon),
+            new LandingPatch(RoomSurface.SouthWall,
+            [
+                new Vector3(-0.6, -2.5, 0.5), new Vector3(0.6, -2.5, 0.5),
+                new Vector3(0.6, -2.5, 1.0), new Vector3(-0.6, -2.5, 1.0),
+            ]),
+        ];
+        var illumination = new IlluminationResult(RoomSurface.Floor, new Vector3(0, -1.75, 0), TestIlluminatedPolygon, twoPatches);
+
+        var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination);
+
+        // 4 light-cone faces (unchanged, still built from IlluminatedPolygon) + 2 landing-patch
+        // fills (one per patch, instead of the usual 1).
+        Assert.Equal(6, primitives.OfType<ScenePolygon>().Count());
     }
 }

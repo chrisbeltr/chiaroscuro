@@ -70,6 +70,29 @@ public class RayTracerTests
     }
 
     [Fact]
+    public void Trace_WhenLightOverflowsPastThePrimarySurface_PopulatesMultiplePatches()
+    {
+        // A narrow room and a wide, off-center East window pushes part of the light patch
+        // past the West wall's own Y bound - RayTracer.Trace should wrap that overflow onto
+        // the North wall rather than leaving it in the raw, unclipped IlluminatedPolygon.
+        var room = new Room(Width: 4, Length: 2, Height: 3);
+        var window = new Window(WallOrientation.East, HorizontalOffset: 0, SillHeight: 1, Width: 1.5, Height: 1);
+        var sunPosition = new SolarPosition(ElevationDegrees: 5, AzimuthDegrees: 95);
+
+        var result = RayTracer.Trace(room, window, sunPosition);
+
+        Assert.NotNull(result);
+        Assert.Equal(RoomSurface.WestWall, result.Value.Surface);
+        Assert.Equal(2, result.Value.Patches.Count);
+
+        var westPatch = Assert.Single(result.Value.Patches, p => p.Surface == RoomSurface.WestWall);
+        Assert.All(westPatch.Polygon, v => Assert.True(v.Y <= 1.0 + 1e-6));
+
+        var northPatch = Assert.Single(result.Value.Patches, p => p.Surface == RoomSurface.NorthWall);
+        Assert.All(northPatch.Polygon, v => Assert.Equal(1.0, v.Y, precision: 6));
+    }
+
+    [Fact]
     public void Trace_ReturnsNull_WhenLightTravelsAwayFromTheRoomInterior()
     {
         // Sun below the horizon (negative elevation), positioned so -S_v points back out
