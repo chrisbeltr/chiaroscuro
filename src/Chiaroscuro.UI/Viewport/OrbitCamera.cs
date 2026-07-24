@@ -36,7 +36,7 @@ public sealed class OrbitCamera
 
     public void Orbit(double deltaYaw, double deltaPitch)
     {
-        Yaw += deltaYaw;
+        Yaw += -deltaYaw;
         Pitch = Math.Clamp(Pitch + deltaPitch, -MaxPitchRadians, MaxPitchRadians);
     }
 
