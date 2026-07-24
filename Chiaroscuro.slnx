@@ -8,5 +8,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Chiaroscuro.Core.Tests/Chiaroscuro.Core.Tests.csproj" />
+    <Project Path="tests/Chiaroscuro.UI.Tests/Chiaroscuro.UI.Tests.csproj" />
   </Folder>
 </Solution>
