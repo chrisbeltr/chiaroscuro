@@ -34,31 +34,35 @@
         <SolidColorBrush x:Key="ChiaroscuroSunYellowBrush" Color="{StaticResource ChiaroscuroSunYellowColor}" />
 
         <!--
-            Hover ("pointerover") appearance for the input controls (NumericUpDown, DatePicker,
-            TimePicker, ComboBox). These x:Key names are NOT ours to choose - they're
+            Hover ("pointerover") appearance for the input controls (NumericUpDown, ComboBox,
+            and the spinner arrow buttons). These x:Key names are NOT ours to choose - they're
             FluentTheme's own DynamicResource keys, which its built-in control templates already
             look up whenever the pointer is over the control. Because this file is included
             *after* <FluentTheme /> in App.axaml, redeclaring the same keys here overrides
             FluentTheme's defaults with our palette, so we get gold hover styling without having
             to rewrite any control templates ourselves.
 
-            NumericUpDown has no resource keys of its own - it's built internally from a
-            TextBox, so it reads the TextControl* keys below.
+            Verified against FluentTheme's compiled templates (decompiled locally) which keys
+            are actually read on ":pointerover" - some resource names exist in the theme
+            assembly but are never wired to a real ":pointerover" Selector (e.g. DatePicker's
+            and TimePicker's own flyout buttons have no hover state at all in this Fluent
+            version). Those controls are themed with real Style rules below instead, since
+            redeclaring their unused resource keys would silently do nothing.
+
+            NumericUpDown has no resource keys of its own - its text area is a literal
+            TextBox internally, so it reads the TextControl* keys below. Its spinner arrows
+            are RepeatButtons that read RepeatButton* keys.
         -->
         <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
         <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="{StaticResource ChiaroscuroAmberColor}" />
         <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="{StaticResource ChiaroscuroGoldColor}" />
 
-        <SolidColorBrush x:Key="DatePickerButtonBackgroundPointerOver" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
-        <SolidColorBrush x:Key="DatePickerButtonBorderBrushPointerOver" Color="{StaticResource ChiaroscuroAmberColor}" />
-        <SolidColorBrush x:Key="DatePickerButtonForegroundPointerOver" Color="{StaticResource ChiaroscuroGoldColor}" />
-
-        <SolidColorBrush x:Key="TimePickerButtonBackgroundPointerOver" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
-        <SolidColorBrush x:Key="TimePickerButtonBorderBrushPointerOver" Color="{StaticResource ChiaroscuroAmberColor}" />
-        <SolidColorBrush x:Key="TimePickerButtonForegroundPointerOver" Color="{StaticResource ChiaroscuroGoldColor}" />
-
         <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
         <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="{StaticResource ChiaroscuroAmberColor}" />
+
+        <!-- The NumericUpDown increment/decrement arrow buttons only ever change their
+             Background on hover - FluentTheme never wires a hover foreground/border for them. -->
+        <SolidColorBrush x:Key="RepeatButtonBackgroundPointerOver" Color="{StaticResource ChiaroscuroGoldBackgroundColor}" />
     </Styles.Resources>
 
     <!-- Base look applied everywhere: dark window chrome with light, readable text. -->
@@ -74,6 +78,26 @@
     </Style>
     <Style Selector="NumericUpDown PathIcon">
         <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroForegroundBrush}" />
+    </Style>
+
+    <!-- DatePicker/TimePicker have no built-in ":pointerover" state in this FluentTheme
+         version, so there's no resource key to redeclare (see the note in Styles.Resources
+         above). Setting these three properties directly on the picker still reaches the
+         visible button, because the picker's own control theme template-binds its inner
+         "PART_FlyoutButton".Background/BorderBrush/Foreground straight back to these same
+         properties on the picker itself. -->
+    <Style Selector="DatePicker:pointerover, TimePicker:pointerover">
+        <Setter Property="Background" Value="{DynamicResource ChiaroscuroGoldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ChiaroscuroAmberBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroGoldBrush}" />
+    </Style>
+
+    <!-- ComboBox's own ":pointerover" state (via ComboBoxBackgroundPointerOver/
+         ComboBoxBorderBrushPointerOver above) only recolors the box itself - FluentTheme
+         never wires a hover foreground for the selected-item text, so it's set here by
+         reaching directly into the template for the named "ContentPresenter" part. -->
+    <Style Selector="ComboBox:pointerover /template/ ContentPresenter#ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroGoldBrush}" />
     </Style>
 
     <!-- A reusable "panel card" look (spec: #120E2A panels with #2E235A borders) for
