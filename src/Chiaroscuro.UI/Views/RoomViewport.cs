@@ -117,7 +117,13 @@ public sealed class RoomViewport : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        context.Custom(new ViewportDrawOperation(new Rect(Bounds.Size), _camera, Room, Window, Illumination));
+
+        // Snapshot the camera on the UI thread: Render() on the draw operation below runs on
+        // Avalonia's render thread, while pointer/wheel handlers mutate _camera on this (UI)
+        // thread. Passing a frozen copy instead of the live instance avoids reading a
+        // torn/half-updated camera state (e.g. new yaw with old pitch) from another thread.
+        var cameraSnapshot = new OrbitCamera(_camera.Target, _camera.Yaw, _camera.Pitch, _camera.Distance);
+        context.Custom(new ViewportDrawOperation(new Rect(Bounds.Size), cameraSnapshot, Room, Window, Illumination));
     }
 
     private sealed class ViewportDrawOperation(Rect bounds, OrbitCamera camera, Room room, Window window, IlluminationResult? illumination)
