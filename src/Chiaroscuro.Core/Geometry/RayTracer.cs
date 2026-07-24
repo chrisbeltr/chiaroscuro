@@ -34,8 +34,7 @@ public readonly record struct IlluminationResult(
     IReadOnlyList<LandingPatch> Patches);
 
 /// <summary>A single, physically-real piece of a light patch confined to one room surface.
-/// See <see cref="IlluminationResult.Patches"/> (added in a later step) and
-/// <see cref="IlluminationPatchClipper"/>.</summary>
+/// See <see cref="IlluminationResult.Patches"/> and <see cref="IlluminationPatchClipper"/>.</summary>
 /// <param name="Surface">Which surface this piece of the patch lies on.</param>
 /// <param name="Polygon">
 /// The patch's corners on that surface, in order. Unlike <see cref="IlluminationResult.IlluminatedPolygon"/>,
