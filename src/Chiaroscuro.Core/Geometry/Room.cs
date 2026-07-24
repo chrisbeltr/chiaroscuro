@@ -64,7 +64,10 @@ public readonly record struct Room(double Width, double Length, double Height)
 
     private static bool IsWithinExtent(double coordinate, double extent) => Math.Abs(coordinate) <= extent / 2.0;
 
-    private static RoomSurface ToRoomSurface(WallOrientation wall) => wall switch
+    /// <summary>Maps a window's wall to the corresponding <see cref="RoomSurface"/> - e.g. for
+    /// excluding a window's own wall from candidate landing surfaces. Internal (not private)
+    /// so <see cref="IlluminationPatchClipper"/> can reuse it too.</summary>
+    internal static RoomSurface ToRoomSurface(WallOrientation wall) => wall switch
     {
         WallOrientation.North => RoomSurface.NorthWall,
         WallOrientation.South => RoomSurface.SouthWall,

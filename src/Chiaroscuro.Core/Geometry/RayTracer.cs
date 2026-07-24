@@ -16,6 +16,17 @@ using Chiaroscuro.Core.Solar;
 /// </param>
 public readonly record struct IlluminationResult(RoomSurface Surface, Vector3 CenterPoint, Vector3[] IlluminatedPolygon);
 
+/// <summary>A single, physically-real piece of a light patch confined to one room surface.
+/// See <see cref="IlluminationResult.Patches"/> (added in a later step) and
+/// <see cref="IlluminationPatchClipper"/>.</summary>
+/// <param name="Surface">Which surface this piece of the patch lies on.</param>
+/// <param name="Polygon">
+/// The patch's corners on that surface, in order. Unlike <see cref="IlluminationResult.IlluminatedPolygon"/>,
+/// this isn't always 4 points - clipping a quad against a surface's edge can add extra
+/// vertices wherever the polygon crosses the boundary.
+/// </param>
+public readonly record struct LandingPatch(RoomSurface Surface, Vector3[] Polygon);
+
 /// <summary>Implements spec §3.2: ray-plane intersection and aperture projection.</summary>
 public static class RayTracer
 {
@@ -97,5 +108,19 @@ public static class RayTracer
         }
 
         return ray.PointAt(t);
+    }
+
+    /// <summary>
+    /// Like <see cref="ProjectOntoPlane"/>, but returns null instead of throwing when
+    /// <paramref name="direction"/> runs parallel to <paramref name="plane"/>. Used by
+    /// <see cref="IlluminationPatchClipper"/> when continuing a ray onto a neighboring
+    /// surface, where - unlike the original window-corner-onto-primary-surface projection -
+    /// there's no guarantee the ray isn't parallel to that particular neighbor (e.g. a ray
+    /// travelling due south can never reach an east/west wall by continuing further).
+    /// </summary>
+    internal static Vector3? TryProjectOntoPlane(Vector3 point, Vector3 direction, Plane plane)
+    {
+        var ray = new Ray(point, direction);
+        return ray.IntersectParameter(plane) is { } t ? ray.PointAt(t) : null;
     }
 }
