@@ -62,6 +62,19 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _resultText = string.Empty;
 
+    // The 3D viewport (RoomViewport) binds to these three directly, so it always shows
+    // exactly what Recalculate() just computed. Room defaults to a sensible non-empty box
+    // so the viewport has something to render even before Recalculate() runs for the first
+    // time (though in practice that happens immediately, in the constructor below).
+    [ObservableProperty]
+    private Room _room = new(6, 5, 3);
+
+    [ObservableProperty]
+    private Window _window;
+
+    [ObservableProperty]
+    private IlluminationResult? _illumination;
+
     public MainViewModel()
     {
         Recalculate();
@@ -115,11 +128,11 @@ public partial class MainViewModel : ViewModelBase
 
         var sunPosition = SolarCalculator.Calculate((double)latitude, (double)longitude, instant.InUtc());
 
-        var room = new Room((double)roomWidth, (double)roomLength, (double)roomHeight);
-        var window = new Window(WindowWall, (double)windowHorizontalOffset, (double)windowSillHeight, (double)windowWidth, (double)windowHeight);
-        var traceResult = RayTracer.Trace(room, window, sunPosition);
+        Room = new Room((double)roomWidth, (double)roomLength, (double)roomHeight);
+        Window = new Window(WindowWall, (double)windowHorizontalOffset, (double)windowSillHeight, (double)windowWidth, (double)windowHeight);
+        Illumination = RayTracer.Trace(Room, Window, sunPosition);
 
-        ResultText = traceResult is { } hit
+        ResultText = Illumination is { } hit
             ? $"Sun elevation {sunPosition.ElevationDegrees:F1}°, azimuth {sunPosition.AzimuthDegrees:F1}°\n"
               + $"Light lands on {hit.Surface} at ({hit.CenterPoint.X:F2}, {hit.CenterPoint.Y:F2}, {hit.CenterPoint.Z:F2})"
             : $"Sun elevation {sunPosition.ElevationDegrees:F1}°, azimuth {sunPosition.AzimuthDegrees:F1}°\n"
