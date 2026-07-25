@@ -211,7 +211,7 @@ public partial class MainViewModel : ViewModelBase
                 Room, Window, target, (double)latitude, (double)longitude, zone, localDate, (double)toleranceDegrees);
             var topMatches = AlignmentMatchSummarizer.SummarizeTopMatches(rawMatches, maxResults: 15);
 
-            AlignmentMatches = topMatches.Select(match =>
+            AlignmentMatches = topMatches.Count > 0 ? topMatches.Select(match =>
             {
                 var matchDateTime = match.DateTime.ToDateTimeUnspecified();
                 return new AlignmentMatchCard(
@@ -219,7 +219,12 @@ public partial class MainViewModel : ViewModelBase
                     matchDateTime.ToString("h:mm tt", CultureInfo.InvariantCulture),
                     $"{match.AngleDifferenceDegrees:F2}° off",
                     matchDateTime);
-            }).ToList();
+            }).ToList() : [
+                new AlignmentMatchCard(
+                    "No matches found.",
+                    "Try a higher tolerance or different position.",
+                    "", new LocalDateTime().ToDateTimeUnspecified())
+            ];
         }
     }
 }
