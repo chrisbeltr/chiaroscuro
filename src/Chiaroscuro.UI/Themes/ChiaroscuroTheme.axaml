@@ -62,9 +62,13 @@
          that shade is for active control highlights/key UI focal points. -->
     <Style Selector="Border.matchCard">
         <Setter Property="Background" Value="{DynamicResource ChiaroscuroGoldBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ChiaroscuroGoldBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ChiaroscuroAmberBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    
+    <Style Selector="Border.matchCard StackPanel TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ChiaroscuroGoldBrush}" />
     </Style>
 
     <!-- Strip FluentTheme's default ListBoxItem padding/background so the matchCard Border
