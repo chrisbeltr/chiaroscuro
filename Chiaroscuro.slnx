@@ -5,6 +5,8 @@
   <Folder Name="/src/">
     <Project Path="src/Chiaroscuro.Core/Chiaroscuro.Core.csproj" />
     <Project Path="src/Chiaroscuro.UI/Chiaroscuro.UI.csproj" />
+    <Project Path="src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj" />
+    <Project Path="src/Chiaroscuro.Wasm/Chiaroscuro.Wasm.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Chiaroscuro.Core.Tests/Chiaroscuro.Core.Tests.csproj" />
