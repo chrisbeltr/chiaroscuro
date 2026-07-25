@@ -2,6 +2,7 @@ using Chiaroscuro.Core.Geometry;
 using Chiaroscuro.Core.InverseSolver;
 using Chiaroscuro.Core.Solar;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using NodaTime;
 using System.Globalization;
 
@@ -12,6 +13,14 @@ public partial class MainViewModel : ViewModelBase
     // Static, never changes, so it's a plain property (not [ObservableProperty]) - it just
     // gives the Wall ComboBox in XAML something to list via ItemsSource.
     public static IReadOnlyList<WallOrientation> WallOrientations { get; } = Enum.GetValues<WallOrientation>();
+
+    // Chiaroscuro.UI is shared by both the desktop and browser heads and has no platform-specific
+    // code of its own, but "current location" needs a different strategy per platform (the
+    // browser's navigator.geolocation vs. an IP-based lookup on desktop, since .NET has no
+    // built-in cross-platform GPS API). Rather than pulling platform code into this shared
+    // library, each head sets this delegate once at startup (see Chiaroscuro.Desktop/Program.cs
+    // and Chiaroscuro.Wasm/Program.cs); left null, the button below is simply a no-op.
+    public static Func<Task<(double Latitude, double Longitude)?>>? LocationProvider { get; set; }
 
     // --- Location & time -----------------------------------------------------------
     // Defaults to New York City, matched against suncalc.org during manual testing.
@@ -142,6 +151,29 @@ public partial class MainViewModel : ViewModelBase
     partial void OnTargetYChanged(decimal? value) => Recalculate();
     partial void OnTargetZChanged(decimal? value) => Recalculate();
     partial void OnToleranceDegreesChanged(decimal? value) => Recalculate();
+
+    [RelayCommand]
+    private void JumpToNow()
+    {
+        Date = DateTimeOffset.Now.Date;
+        TimeOfDay = DateTimeOffset.Now.TimeOfDay;
+    }
+
+    [RelayCommand]
+    private async Task JumpToCurrentLocation()
+    {
+        if (LocationProvider is null)
+        {
+            return;
+        }
+
+        var location = await LocationProvider();
+        if (location is { } current)
+        {
+            Latitude = (decimal)current.Latitude;
+            Longitude = (decimal)current.Longitude;
+        }
+    }
 
     partial void OnSelectedAlignmentMatchChanged(AlignmentMatchCard? value)
     {

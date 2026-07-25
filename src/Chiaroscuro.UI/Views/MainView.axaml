@@ -26,11 +26,11 @@
                         <TextBlock Text="Location &amp; Time" FontWeight="Bold" />
 
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" >
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Latitude" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Latitude (°)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="0" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding Latitude}" Increment="0.0001" FormatString="F4" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Longitude" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Longitude (°)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding Longitude}" Increment="0.0001" FormatString="F4" />
 
@@ -42,9 +42,16 @@
                             <TimePicker Grid.Row="3" Grid.Column="1" Margin="0,0,0,4"
                                         SelectedTime="{Binding TimeOfDay}" HorizontalAlignment="Stretch" />
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="UTC Offset (h)" VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <NumericUpDown Grid.Row="4" Grid.Column="1"
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="UTC Offset (h)" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <NumericUpDown Grid.Row="4" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding UtcOffsetHours}" Increment="0.5" FormatString="F2" />
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*,*" Margin="0,4,0,0">
+                            <Button Grid.Column="0" Content="Now" Command="{Binding JumpToNowCommand}"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,0,4,0" />
+                            <Button Grid.Column="1" Content="My Location" Command="{Binding JumpToCurrentLocationCommand}"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="4,0,0,0" />
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -54,15 +61,15 @@
                         <TextBlock Text="Room" FontWeight="Bold" />
 
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Width" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Width (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="0" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding RoomWidth}" Increment="0.1" FormatString="F2" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Length" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Length (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding RoomLength}" Increment="0.1" FormatString="F2" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Height" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Height (m)" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <NumericUpDown Grid.Row="2" Grid.Column="1"
                                            Value="{Binding RoomHeight}" Increment="0.1" FormatString="F2" />
                         </Grid>
@@ -79,19 +86,19 @@
                                       ItemsSource="{Binding WallOrientations}" SelectedItem="{Binding WindowWall}"
                                       HorizontalAlignment="Stretch" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Horiz. Offset" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Horiz. Offset (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding WindowHorizontalOffset}" Increment="0.05" FormatString="F2" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Sill Height" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Sill Height (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="2" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding WindowSillHeight}" Increment="0.05" FormatString="F2" />
 
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Width" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Width (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="3" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding WindowWidth}" Increment="0.05" FormatString="F2" />
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Height" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Height (m)" VerticalAlignment="Center" Margin="0,0,8,0" />
                             <NumericUpDown Grid.Row="4" Grid.Column="1"
                                            Value="{Binding WindowHeight}" Increment="0.05" FormatString="F2" />
                         </Grid>
@@ -103,15 +110,15 @@
                         <TextBlock Text="Target Point" FontWeight="Bold" />
 
                         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="X" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="X (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="0" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding TargetX}" Increment="0.1" FormatString="F2" />
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Y" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Y (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding TargetY}" Increment="0.1" FormatString="F2" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Z" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Z (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="2" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding TargetZ}" Increment="0.1" FormatString="F2" />
 
