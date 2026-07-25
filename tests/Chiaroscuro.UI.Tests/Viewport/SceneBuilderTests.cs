@@ -98,4 +98,58 @@ public class SceneBuilderTests
         Assert.All(coneFaces, face => Assert.All(face.Corners, v => Assert.True(v.X <= 3.0 + 1e-9)));
         Assert.Contains(coneFaces, face => face.Corners.Any(v => Math.Abs(v.X - 3.0) < 1e-9));
     }
+
+    [Fact]
+    public void Build_WithTargetPoint_EmitsCrosshairLinesCenteredOnTheTarget()
+    {
+        var target = new Vector3(0, -1.5, 0.5);
+
+        var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination: null, target: target);
+
+        // 16 wireframe lines (unaffected) + 2 crosshair segments (no ring, since no tolerance
+        // was given).
+        var lines = primitives.OfType<SceneLine>().ToList();
+        Assert.Equal(18, lines.Count);
+
+        var crosshairLines = lines.Skip(16).ToList();
+        Assert.All(crosshairLines, line =>
+        {
+            var midpoint = (line.Start + line.End) * 0.5;
+            Assert.Equal(target.X, midpoint.X, precision: 9);
+            Assert.Equal(target.Y, midpoint.Y, precision: 9);
+            Assert.Equal(target.Z, midpoint.Z, precision: 9);
+        });
+    }
+
+    [Fact]
+    public void Build_WithTargetPointAndTolerance_AlsoEmitsARingAtTheExpectedRadius()
+    {
+        var target = new Vector3(0, -1.5, 0.5);
+        const double toleranceDegrees = 5.0;
+
+        var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination: null, target, toleranceDegrees);
+
+        var windowCenter = TestWindow.GetCenter(TestRoom);
+        var expectedRadius = (windowCenter - target).Length * Math.Tan(double.DegreesToRadians(toleranceDegrees));
+
+        // 16 wireframe + 2 crosshair + 32 ring segments.
+        var lines = primitives.OfType<SceneLine>().ToList();
+        Assert.Equal(50, lines.Count);
+
+        var ringLines = lines.Skip(18).ToList();
+        Assert.Equal(32, ringLines.Count);
+        Assert.All(ringLines, line =>
+        {
+            Assert.Equal(expectedRadius, (line.Start - target).Length, precision: 6);
+            Assert.Equal(expectedRadius, (line.End - target).Length, precision: 6);
+        });
+    }
+
+    [Fact]
+    public void Build_WithoutTargetPoint_EmitsNoIndicatorPrimitives()
+    {
+        var primitives = SceneBuilder.Build(TestRoom, TestWindow, illumination: null);
+
+        Assert.Equal(16, primitives.Count); // just the wireframe, nothing else
+    }
 }

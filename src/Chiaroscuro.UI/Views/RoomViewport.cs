@@ -25,6 +25,12 @@ public sealed class RoomViewport : Control
     public static readonly StyledProperty<IlluminationResult?> IlluminationProperty =
         AvaloniaProperty.Register<RoomViewport, IlluminationResult?>(nameof(Illumination));
 
+    public static readonly StyledProperty<Vector3?> TargetPointProperty =
+        AvaloniaProperty.Register<RoomViewport, Vector3?>(nameof(TargetPoint));
+
+    public static readonly StyledProperty<decimal?> ToleranceDegreesProperty =
+        AvaloniaProperty.Register<RoomViewport, decimal?>(nameof(ToleranceDegrees));
+
     public Room Room
     {
         get => GetValue(RoomProperty);
@@ -41,6 +47,18 @@ public sealed class RoomViewport : Control
     {
         get => GetValue(IlluminationProperty);
         set => SetValue(IlluminationProperty, value);
+    }
+
+    public Vector3? TargetPoint
+    {
+        get => GetValue(TargetPointProperty);
+        set => SetValue(TargetPointProperty, value);
+    }
+
+    public decimal? ToleranceDegrees
+    {
+        get => GetValue(ToleranceDegreesProperty);
+        set => SetValue(ToleranceDegreesProperty, value);
     }
 
     private readonly OrbitCamera _camera;
@@ -61,7 +79,8 @@ public sealed class RoomViewport : Control
             _camera.Target = GetRoomCenter(Room);
         }
 
-        if (change.Property == RoomProperty || change.Property == WindowProperty || change.Property == IlluminationProperty)
+        if (change.Property == RoomProperty || change.Property == WindowProperty || change.Property == IlluminationProperty
+            || change.Property == TargetPointProperty || change.Property == ToleranceDegreesProperty)
         {
             InvalidateVisual();
         }
@@ -123,10 +142,13 @@ public sealed class RoomViewport : Control
         // thread. Passing a frozen copy instead of the live instance avoids reading a
         // torn/half-updated camera state (e.g. new yaw with old pitch) from another thread.
         var cameraSnapshot = new OrbitCamera(_camera.Target, _camera.Yaw, _camera.Pitch, _camera.Distance);
-        context.Custom(new ViewportDrawOperation(new Rect(Bounds.Size), cameraSnapshot, Room, Window, Illumination));
+        context.Custom(new ViewportDrawOperation(
+            new Rect(Bounds.Size), cameraSnapshot, Room, Window, Illumination, TargetPoint, (double?)ToleranceDegrees));
     }
 
-    private sealed class ViewportDrawOperation(Rect bounds, OrbitCamera camera, Room room, Window window, IlluminationResult? illumination)
+    private sealed class ViewportDrawOperation(
+        Rect bounds, OrbitCamera camera, Room room, Window window, IlluminationResult? illumination,
+        Vector3? target, double? toleranceDegrees)
         : ICustomDrawOperation
     {
         public Rect Bounds { get; } = bounds;
@@ -150,7 +172,7 @@ public sealed class RoomViewport : Control
             using var lease = leaseFeature.Lease();
             var canvas = lease.SkCanvas;
 
-            var primitives = SceneBuilder.Build(room, window, illumination);
+            var primitives = SceneBuilder.Build(room, window, illumination, target, toleranceDegrees);
             var projected = ProjectAndSort(primitives, camera, Bounds.Width, Bounds.Height);
 
             using var paint = new SKPaint { IsAntialias = true };
