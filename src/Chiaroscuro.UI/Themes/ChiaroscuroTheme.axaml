@@ -58,4 +58,20 @@
         <Setter Property="CornerRadius" Value="6" />
     </Style>
 
+    <!-- The inverse solver's "Golden Highlight Cards" - gold accent per SPEC.md's rule that
+         that shade is for active control highlights/key UI focal points. -->
+    <Style Selector="Border.matchCard">
+        <Setter Property="Background" Value="{DynamicResource ChiaroscuroGoldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ChiaroscuroGoldBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+
+    <!-- Strip FluentTheme's default ListBoxItem padding/background so the matchCard Border
+         above provides the entire visual, instead of a second box appearing behind it. -->
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
 </Styles>
