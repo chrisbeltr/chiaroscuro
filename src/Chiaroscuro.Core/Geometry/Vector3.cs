@@ -14,6 +14,15 @@ public readonly record struct Vector3(double X, double Y, double Z)
 
     public double Dot(Vector3 other) => X * other.X + Y * other.Y + Z * other.Z;
 
+    /// <summary>The standard 3D cross product: a vector perpendicular to both inputs, with
+    /// magnitude equal to the area of the parallelogram they span and direction given by the
+    /// right-hand rule. Zero when the two vectors are parallel (including when either is
+    /// itself zero).</summary>
+    public Vector3 Cross(Vector3 other) => new(
+        Y * other.Z - Z * other.Y,
+        Z * other.X - X * other.Z,
+        X * other.Y - Y * other.X);
+
     public double AngleTo(Vector3 other)
     {
         var cosAngle = Normalized().Dot(other.Normalized());

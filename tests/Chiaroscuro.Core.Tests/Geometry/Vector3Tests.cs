@@ -77,4 +77,33 @@ public class Vector3Tests
         Assert.Equal(new Vector3(2, 4, 6), a * 2);
         Assert.Equal(new Vector3(2, 4, 6), 2 * a);
     }
+
+    [Fact]
+    public void Cross_StandardBasisVectors_FollowsRightHandRule()
+    {
+        var x = new Vector3(1, 0, 0);
+        var y = new Vector3(0, 1, 0);
+
+        var result = x.Cross(y);
+
+        Assert.Equal(new Vector3(0, 0, 1), result);
+    }
+
+    [Fact]
+    public void Cross_IsAntiCommutative()
+    {
+        var a = new Vector3(1, 2, 3);
+        var b = new Vector3(4, 5, 6);
+
+        Assert.Equal(a.Cross(b), -(b.Cross(a)));
+    }
+
+    [Fact]
+    public void Cross_OfParallelVectors_IsZero()
+    {
+        var a = new Vector3(2, 4, 6);
+        var b = new Vector3(1, 2, 3); // same direction as a, different magnitude
+
+        Assert.Equal(Vector3.Zero, a.Cross(b));
+    }
 }
