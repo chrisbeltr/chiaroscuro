@@ -22,11 +22,11 @@ public static class SceneBuilder
 
         if (illumination is { } hit)
         {
-            // The cone keeps using the raw, unclipped projection - splitting it across
-            // surfaces too is out of scope for this fix (see the design doc). Only the
-            // filled landing patch respects the physically-clipped, possibly-multi-surface
-            // shape.
-            AddLightCone(primitives, window.GetCorners(room), hit.IlluminatedPolygon);
+            // The cone still starts from the raw, unclipped projection rather than
+            // following the fill's per-surface wrap - but each resulting face is now
+            // clipped to the room's overall box so it never visually pokes through a
+            // wall/floor/ceiling.
+            AddLightCone(primitives, room, window.GetCorners(room), hit.IlluminatedPolygon);
 
             foreach (var patch in hit.Patches)
             {
@@ -72,20 +72,27 @@ public static class SceneBuilder
         }
     }
 
-    /// <summary>The four translucent quad faces connecting each window corner to the
+    /// <summary>Up to four translucent quad faces connecting each window corner to the
     /// matching corner of where its light lands - together forming the light "cone" (really
     /// a frustum, since both ends are rectangles). Relies on <see cref="Window.GetCorners"/>
     /// and <see cref="IlluminationResult.IlluminatedPolygon"/> sharing the same corner
     /// ordering (bottom-left, bottom-right, top-right, top-left) - see RayTracer.cs, which
-    /// projects each window corner in order to build IlluminatedPolygon.</summary>
-    private static void AddLightCone(List<ScenePrimitive> primitives, Vector3[] windowCorners, Vector3[] landingCorners)
+    /// projects each window corner in order to build IlluminatedPolygon. Each face is clipped
+    /// to <paramref name="room"/>'s box before being added, so a face never renders outside
+    /// the physical room even though its source corners might extend past it; a face clipped
+    /// away entirely is simply skipped.</summary>
+    private static void AddLightCone(List<ScenePrimitive> primitives, Room room, Vector3[] windowCorners, Vector3[] landingCorners)
     {
         for (var i = 0; i < windowCorners.Length; i++)
         {
             var next = (i + 1) % windowCorners.Length;
-            primitives.Add(new ScenePolygon(
-                [windowCorners[i], windowCorners[next], landingCorners[next], landingCorners[i]],
-                LightConeColor));
+            var face = RoomBoundsClipper.ClipToRoom(
+                [windowCorners[i], windowCorners[next], landingCorners[next], landingCorners[i]], room);
+
+            if (face.Length >= 3)
+            {
+                primitives.Add(new ScenePolygon(face, LightConeColor));
+            }
         }
     }
 }
