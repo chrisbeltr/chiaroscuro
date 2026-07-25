@@ -1,0 +1,49 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-latest
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Chiaroscuro.slnx
+
+      - name: Build
+        run: dotnet build Chiaroscuro.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Chiaroscuro.slnx -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: Publish self-contained desktop binary (${{ matrix.rid }})
+        run: >
+          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -o publish/${{ matrix.rid }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chiaroscuro-${{ matrix.rid }}
+          path: publish/${{ matrix.rid }}
+          if-no-files-found: error
