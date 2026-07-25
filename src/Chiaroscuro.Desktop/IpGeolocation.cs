@@ -11,11 +11,13 @@ internal static class IpGeolocation
 {
     private static readonly HttpClient Client = new();
 
-    public static async Task<(double Latitude, double Longitude)?> GetCurrentLocationAsync()
+    public static async Task<(double Latitude, double Longitude, double UtcOffsetHours)?> GetCurrentLocationAsync()
     {
         try
         {
-            using var response = await Client.GetAsync("http://ip-api.com/json/");
+            // "fields=" opts into the "offset" field (UTC offset in seconds) - it's not in
+            // ip-api.com's default field set, which otherwise only gives an IANA zone name.
+            using var response = await Client.GetAsync("http://ip-api.com/json/?fields=status,lat,lon,offset");
             response.EnsureSuccessStatusCode();
 
             await using var stream = await response.Content.ReadAsStreamAsync();
@@ -23,7 +25,8 @@ internal static class IpGeolocation
 
             var lat = json.RootElement.GetProperty("lat").GetDouble();
             var lon = json.RootElement.GetProperty("lon").GetDouble();
-            return (lat, lon);
+            var utcOffsetHours = json.RootElement.GetProperty("offset").GetDouble() / 3600.0;
+            return (lat, lon, utcOffsetHours);
         }
         catch
         {

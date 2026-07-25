@@ -16,7 +16,7 @@ internal static partial class BrowserGeolocation
     [JSImport("globalThis.chiaroscuroGetLocation")]
     private static partial Task<string> GetLocationJsonAsync();
 
-    public static async Task<(double Latitude, double Longitude)?> GetCurrentLocationAsync()
+    public static async Task<(double Latitude, double Longitude, double UtcOffsetHours)?> GetCurrentLocationAsync()
     {
         try
         {
@@ -24,7 +24,8 @@ internal static partial class BrowserGeolocation
             using var doc = JsonDocument.Parse(json);
             var lat = doc.RootElement.GetProperty("lat").GetDouble();
             var lon = doc.RootElement.GetProperty("lon").GetDouble();
-            return (lat, lon);
+            var utcOffsetHours = doc.RootElement.GetProperty("utcOffsetHours").GetDouble();
+            return (lat, lon, utcOffsetHours);
         }
         catch
         {

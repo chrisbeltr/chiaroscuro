@@ -14,7 +14,16 @@ globalThis.chiaroscuroGetLocation = function () {
             return;
         }
         navigator.geolocation.getCurrentPosition(
-            pos => resolve(JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude })),
+            // getTimezoneOffset() returns minutes to ADD to local time to reach UTC (e.g. +240 for
+            // EDT, UTC-4), which is the opposite sign convention from UtcOffsetHours (negative =
+            // behind UTC) - negate it. This assumes the browser's own clock is set to the same
+            // timezone as the geolocated position, which holds in the vast majority of cases and
+            // needs no extra permission prompt beyond the one geolocation already asked for.
+            pos => resolve(JSON.stringify({
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+                utcOffsetHours: -(new Date().getTimezoneOffset() / 60)
+            })),
             err => reject(err));
     });
 };

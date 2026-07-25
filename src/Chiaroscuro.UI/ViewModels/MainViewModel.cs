@@ -20,7 +20,7 @@ public partial class MainViewModel : ViewModelBase
     // built-in cross-platform GPS API). Rather than pulling platform code into this shared
     // library, each head sets this delegate once at startup (see Chiaroscuro.Desktop/Program.cs
     // and Chiaroscuro.Wasm/Program.cs); left null, the button below is simply a no-op.
-    public static Func<Task<(double Latitude, double Longitude)?>>? LocationProvider { get; set; }
+    public static Func<Task<(double Latitude, double Longitude, double UtcOffsetHours)?>>? LocationProvider { get; set; }
 
     // --- Location & time -----------------------------------------------------------
     // Defaults to New York City, matched against suncalc.org during manual testing.
@@ -155,8 +155,10 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void JumpToNow()
     {
-        Date = DateTimeOffset.Now.Date;
-        TimeOfDay = DateTimeOffset.Now.TimeOfDay;
+        var now = DateTimeOffset.Now;
+        Date = now.Date;
+        TimeOfDay = now.TimeOfDay;
+        UtcOffsetHours = (decimal)now.Offset.TotalHours;
     }
 
     [RelayCommand]
@@ -172,6 +174,7 @@ public partial class MainViewModel : ViewModelBase
         {
             Latitude = (decimal)current.Latitude;
             Longitude = (decimal)current.Longitude;
+            UtcOffsetHours = (decimal)current.UtcOffsetHours;
         }
     }
 
