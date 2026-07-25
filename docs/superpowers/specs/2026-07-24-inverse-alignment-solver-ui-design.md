@@ -89,14 +89,16 @@ New `[ObservableProperty]` fields:
 New UI-only record (lives with the ViewModels, no Core dependency):
 
 ```csharp
-public sealed record AlignmentMatchCard(string DateLabel, string TimeLabel, string AngleLabel, LocalDate Date, LocalTime Time);
+public sealed record AlignmentMatchCard(string DateLabel, string TimeLabel, string AngleLabel, DateTime DateTime);
 ```
 
 `DateLabel`/`TimeLabel`/`AngleLabel` are pre-formatted display strings
 (matching how `ResultText` is already a pre-formatted string rather than
-something bound through XAML converters); `Date`/`Time` are kept
-un-formatted so the click-to-jump command can set `Date`/`TimeOfDay`
-directly without re-parsing display text.
+something bound through XAML converters); `DateTime` is kept un-formatted
+(a single BCL `DateTime` rather than separate NodaTime `LocalDate`/`LocalTime`
+fields - simpler, and avoids any NodaTime dependency in this UI-only record)
+so the click-to-jump handler can set `Date`/`TimeOfDay` directly without
+re-parsing display text.
 
 ### `Chiaroscuro.UI.Viewport.SceneBuilder` (extended)
 
@@ -121,8 +123,10 @@ constant needed.
 ### `Chiaroscuro.UI.Views.RoomViewport` (extended)
 
 Two new `StyledProperty`s, `TargetPoint` (`Vector3?`) and `ToleranceDegrees`
-(`double?`), bound from `MainWindow.axaml` to the view model and threaded
-into `SceneBuilder.Build`.
+(`decimal?` - matching `MainViewModel`'s own type exactly, for binding
+safety; converted to `double?` internally before being passed to
+`SceneBuilder.Build`, which works in `double`), bound from `MainWindow.axaml`
+to the view model.
 
 ## Data flow
 
@@ -150,9 +154,12 @@ computation:
 `MainWindow.axaml`: left sidebar gets one more card, "Target Point" (X/Y/Z
 + Tolerance fields, same style as the existing cards). The bottom results
 `Border` gets a second piece below the existing `ResultText`: a horizontally
-scrollable `ItemsControl` of small amber-accented cards bound to
-`AlignmentMatches`, each with a `[RelayCommand]` that sets `Date`/`TimeOfDay`
-from the card's `Date`/`Time` when clicked.
+scrollable `ListBox` of small gold-accented cards bound to `AlignmentMatches`,
+with `SelectedItem` bound to a new `SelectedAlignmentMatch` property whose
+partial `OnSelectedAlignmentMatchChanged` hook sets `Date`/`TimeOfDay` from
+the clicked card's `DateTime` - matching the codebase's existing
+property-change idiom (used by every other input in `MainViewModel`) rather
+than introducing `[RelayCommand]` as a new pattern.
 
 ## Testing
 

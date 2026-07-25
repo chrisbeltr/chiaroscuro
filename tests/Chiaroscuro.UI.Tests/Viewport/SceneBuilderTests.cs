@@ -142,6 +142,13 @@ public class SceneBuilderTests
         {
             Assert.Equal(expectedRadius, (line.Start - target).Length, precision: 6);
             Assert.Equal(expectedRadius, (line.End - target).Length, precision: 6);
+
+            // The ring must lie in the plane perpendicular to the window-target direction (a
+            // reticle facing the window), not just at the right radius - so every vertex minus
+            // the target should be orthogonal to that direction (dot product zero).
+            var toWindow = windowCenter - target;
+            Assert.Equal(0.0, (line.Start - target).Dot(toWindow), precision: 6);
+            Assert.Equal(0.0, (line.End - target).Dot(toWindow), precision: 6);
         });
     }
 
