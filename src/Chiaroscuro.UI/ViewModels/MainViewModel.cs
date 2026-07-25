@@ -1,7 +1,9 @@
 using Chiaroscuro.Core.Geometry;
+using Chiaroscuro.Core.InverseSolver;
 using Chiaroscuro.Core.Solar;
 using CommunityToolkit.Mvvm.ComponentModel;
 using NodaTime;
+using System.Globalization;
 
 namespace Chiaroscuro.UI.ViewModels;
 
@@ -58,6 +60,35 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private decimal? _windowHeight = 1.5m;
 
+    // --- Inverse solver target -------------------------------------------------------
+    // Seeded once, in the constructor, from wherever the sun initially lands (or the floor
+    // center if nothing is illuminated yet) - after that, purely user-controlled. See the
+    // constructor below.
+    [ObservableProperty]
+    private decimal? _targetX;
+
+    [ObservableProperty]
+    private decimal? _targetY;
+
+    [ObservableProperty]
+    private decimal? _targetZ;
+
+    [ObservableProperty]
+    private decimal? _toleranceDegrees = 2m;
+
+    // Null whenever any of TargetX/Y/Z is empty - RoomViewport binds to this directly to draw
+    // (or hide) the target crosshair/tolerance ring.
+    [ObservableProperty]
+    private Vector3? _targetPoint;
+
+    [ObservableProperty]
+    private IReadOnlyList<AlignmentMatchCard> _alignmentMatches = [];
+
+    // Bound to the results ListBox's SelectedItem - clicking a card jumps Date/TimeOfDay to
+    // that match, via OnSelectedAlignmentMatchChanged below.
+    [ObservableProperty]
+    private AlignmentMatchCard? _selectedAlignmentMatch;
+
     // --- Result ------------------------------------------------------------------------
     [ObservableProperty]
     private string _resultText = string.Empty;
@@ -78,6 +109,17 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         Recalculate();
+
+        // TargetX/Y/Z default to wherever the sun is illuminating right now, so the inverse
+        // solver has a sensible starting point instead of an arbitrary (0,0,0). This has to
+        // happen after the Recalculate() call above, since Illumination doesn't exist until
+        // that's run once. Setting these three trigger their own Recalculate() calls in turn
+        // (via OnTargetXChanged etc. below), which is what actually populates TargetPoint and
+        // runs the solver for the first time.
+        var seed = Illumination?.CenterPoint ?? new Vector3(0, 0, 0);
+        TargetX = (decimal)seed.X;
+        TargetY = (decimal)seed.Y;
+        TargetZ = (decimal)seed.Z;
     }
 
     // One partial "OnXChanged" hook per input field - CommunityToolkit's generator calls
@@ -96,6 +138,21 @@ public partial class MainViewModel : ViewModelBase
     partial void OnWindowSillHeightChanged(decimal? value) => Recalculate();
     partial void OnWindowWidthChanged(decimal? value) => Recalculate();
     partial void OnWindowHeightChanged(decimal? value) => Recalculate();
+    partial void OnTargetXChanged(decimal? value) => Recalculate();
+    partial void OnTargetYChanged(decimal? value) => Recalculate();
+    partial void OnTargetZChanged(decimal? value) => Recalculate();
+    partial void OnToleranceDegreesChanged(decimal? value) => Recalculate();
+
+    partial void OnSelectedAlignmentMatchChanged(AlignmentMatchCard? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        Date = new DateTimeOffset(value.DateTime.Date, TimeSpan.Zero);
+        TimeOfDay = value.DateTime.TimeOfDay;
+    }
 
     private void Recalculate()
     {
@@ -137,5 +194,32 @@ public partial class MainViewModel : ViewModelBase
               + $"Light lands on {hit.Surface} at ({hit.CenterPoint.X:F2}, {hit.CenterPoint.Y:F2}, {hit.CenterPoint.Z:F2})"
             : $"Sun elevation {sunPosition.ElevationDegrees:F1}°, azimuth {sunPosition.AzimuthDegrees:F1}°\n"
               + "No surface is illuminated at this time.";
+
+        // The target point is independent of whether a tolerance is set - it always reflects
+        // the raw X/Y/Z fields, so RoomViewport can draw the crosshair even without a ring.
+        TargetPoint = TargetX is { } targetX && TargetY is { } targetY && TargetZ is { } targetZ
+            ? new Vector3((double)targetX, (double)targetY, (double)targetZ)
+            : null;
+
+        // The solver only runs when both a target and a tolerance are available. If either
+        // is missing, AlignmentMatches is simply left at its last-known-good value, the same
+        // way Room/Window/Illumination are left alone when other optional input is missing.
+        if (TargetPoint is { } target && ToleranceDegrees is { } toleranceDegrees)
+        {
+            var zone = DateTimeZone.ForOffset(offset);
+            var rawMatches = InverseAlignmentSolver.FindAlignments(
+                Room, Window, target, (double)latitude, (double)longitude, zone, localDate, (double)toleranceDegrees);
+            var topMatches = AlignmentMatchSummarizer.SummarizeTopMatches(rawMatches, maxResults: 15);
+
+            AlignmentMatches = topMatches.Select(match =>
+            {
+                var matchDateTime = match.DateTime.ToDateTimeUnspecified();
+                return new AlignmentMatchCard(
+                    matchDateTime.ToString("MMM d", CultureInfo.InvariantCulture),
+                    matchDateTime.ToString("h:mm tt", CultureInfo.InvariantCulture),
+                    $"{match.AngleDifferenceDegrees:F2}° off",
+                    matchDateTime);
+            }).ToList();
+        }
     }
 }
