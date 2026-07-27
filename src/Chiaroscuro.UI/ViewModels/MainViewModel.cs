@@ -118,7 +118,7 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         JumpToNow();
-        Task.Run(async () => await JumpToCurrentLocation()).GetAwaiter().GetResult();
+        _ = JumpToCurrentLocation();
 
         Recalculate();
         
