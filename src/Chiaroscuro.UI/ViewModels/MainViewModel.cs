@@ -155,15 +155,29 @@ public partial class MainViewModel : ViewModelBase
     partial void OnTargetZChanged(decimal? value) => Recalculate();
     partial void OnToleranceDegreesChanged(decimal? value) => Recalculate();
 
+    // Guards against OnSelectedAlignmentMatchChanged re-firing (and stomping Date/TimeOfDay
+    // back to a stale match) if clearing SelectedAlignmentMatch below causes the ListBox's
+    // selection to get re-pushed into it while the Date/TimeOfDay/UtcOffsetHours assignments
+    // are still cascading through Recalculate().
+    private bool _isJumpingToNow;
+
     [RelayCommand]
     private void JumpToNow()
     {
-        SelectedAlignmentMatch = null;
+        _isJumpingToNow = true;
+        try
+        {
+            SelectedAlignmentMatch = null;
 
-        var now = DateTimeOffset.Now;
-        Date = now.Date;
-        TimeOfDay = now.TimeOfDay;
-        UtcOffsetHours = (decimal)now.Offset.TotalHours;
+            var now = DateTimeOffset.Now;
+            Date = now.Date;
+            TimeOfDay = now.TimeOfDay;
+            UtcOffsetHours = (decimal)now.Offset.TotalHours;
+        }
+        finally
+        {
+            _isJumpingToNow = false;
+        }
     }
 
     [RelayCommand]
@@ -185,7 +199,7 @@ public partial class MainViewModel : ViewModelBase
 
     partial void OnSelectedAlignmentMatchChanged(AlignmentMatchCard? value)
     {
-        if (value?.DateTime is not { } d)
+        if (_isJumpingToNow || value?.DateTime is not { } d)
         {
             return;
         }
