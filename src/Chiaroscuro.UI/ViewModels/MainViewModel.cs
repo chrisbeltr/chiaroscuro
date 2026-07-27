@@ -117,8 +117,11 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        Recalculate();
+        JumpToNow();
+        Task.Run(async () => await JumpToCurrentLocation()).GetAwaiter().GetResult();
 
+        Recalculate();
+        
         // TargetX/Y/Z default to wherever the sun is illuminating right now, so the inverse
         // solver has a sensible starting point instead of an arbitrary (0,0,0). This has to
         // happen after the Recalculate() call above, since Illumination doesn't exist until
@@ -180,13 +183,13 @@ public partial class MainViewModel : ViewModelBase
 
     partial void OnSelectedAlignmentMatchChanged(AlignmentMatchCard? value)
     {
-        if (value is null)
+        if (value?.DateTime is not { } d)
         {
             return;
         }
 
-        Date = new DateTimeOffset(value.DateTime.Date, TimeSpan.Zero);
-        TimeOfDay = value.DateTime.TimeOfDay;
+        Date = new DateTimeOffset(d.Date, TimeSpan.Zero);
+        TimeOfDay = d.TimeOfDay;
     }
 
     private void Recalculate()
@@ -245,8 +248,8 @@ public partial class MainViewModel : ViewModelBase
             var rawMatches = InverseAlignmentSolver.FindAlignments(
                 Room, Window, target, (double)latitude, (double)longitude, zone, localDate, (double)toleranceDegrees);
             var topMatches = AlignmentMatchSummarizer.SummarizeTopMatches(rawMatches, maxResults: 15);
-
-            AlignmentMatches = topMatches.Count > 0 ? topMatches.Select(match =>
+            
+            var tempMatches = topMatches.Count > 0 ? topMatches.Select(match =>
             {
                 var matchDateTime = match.DateTime.ToDateTimeUnspecified();
                 return new AlignmentMatchCard(
@@ -258,8 +261,13 @@ public partial class MainViewModel : ViewModelBase
                 new AlignmentMatchCard(
                     "No matches found.",
                     "Try a higher tolerance or different position.",
-                    "", new LocalDateTime().ToDateTimeUnspecified())
+                    "", null)
             ];
+
+            if (!tempMatches.SequenceEqual(AlignmentMatches))
+            {
+                AlignmentMatches = tempMatches;
+            }
         }
     }
 }

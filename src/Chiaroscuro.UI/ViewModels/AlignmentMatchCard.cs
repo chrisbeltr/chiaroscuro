@@ -13,4 +13,24 @@ namespace Chiaroscuro.UI.ViewModels;
 /// <c>MainViewModel.OnSelectedAlignmentMatchChanged</c> to jump the app's Date/TimeOfDay to
 /// this match when the card is clicked, without having to re-parse the display strings.
 /// </param>
-public sealed record AlignmentMatchCard(string DateLabel, string TimeLabel, string AngleLabel, DateTime DateTime);
+public sealed record AlignmentMatchCard(string DateLabel, string TimeLabel, string AngleLabel, DateTime? DateTime)
+{
+    public bool Equals(AlignmentMatchCard? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+
+        // Compare standard properties and use SequenceEqual for the collection
+        return DateLabel == other.DateLabel && TimeLabel == other.TimeLabel && AngleLabel == other.AngleLabel;
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(DateLabel);
+        hash.Add(TimeLabel);
+        hash.Add(AngleLabel);
+        
+        return hash.ToHashCode();
+    }
+}
