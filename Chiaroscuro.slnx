@@ -1,7 +1,4 @@
 <Solution>
-  <Folder Name="/playground/">
-    <Project Path="playground/Chiaroscuro.Playground/Chiaroscuro.Playground.csproj" />
-  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Chiaroscuro.Core/Chiaroscuro.Core.csproj" />
     <Project Path="src/Chiaroscuro.UI/Chiaroscuro.UI.csproj" />
