@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build and publish (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-latest
+            rid: osx-x64
+          - os: macos-latest
+            rid: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish self-contained desktop binary (${{ matrix.rid }})
+        run: >
+          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -o publish/${{ matrix.rid }}
+
+      - name: Package (zip, Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        working-directory: publish/${{ matrix.rid }}
+        run: Compress-Archive -Path * -DestinationPath ../../Chiaroscuro-${{ matrix.rid }}.zip
+
+      - name: Package (tar.gz, Linux/macOS)
+        if: runner.os != 'Windows'
+        working-directory: publish/${{ matrix.rid }}
+        run: tar -czf ../../Chiaroscuro-${{ matrix.rid }}.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chiaroscuro-${{ matrix.rid }}
+          path: |
+            Chiaroscuro-${{ matrix.rid }}.zip
+            Chiaroscuro-${{ matrix.rid }}.tar.gz
+          if-no-files-found: ignore
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      - name: Publish
+        run: >
+          dotnet publish src/Chiaroscuro.Wasm/Chiaroscuro.Wasm.csproj
+          -c Release
+          -o publish
+
+      - name: Package
+        working-directory: publish/wwwroot
+        run: zip -r ../../Chiaroscuro-wasm.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chiaroscuro-wasm
+          path: Chiaroscuro-wasm.zip
+          if-no-files-found: error
+
+  release:
+    needs: [build-desktop, build-wasm]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Determine release tag
+        id: vars
+        run: echo "tag=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create ${{ steps.vars.outputs.tag }} artifacts/*
+          --title "Chiaroscuro ${{ steps.vars.outputs.tag }}"
+          --generate-notes
