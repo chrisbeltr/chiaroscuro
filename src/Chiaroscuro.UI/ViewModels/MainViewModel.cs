@@ -158,8 +158,8 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private void JumpToNow()
     {
-        Console.WriteLine("waf waf");
         SelectedAlignmentMatch = null;
+
         var now = DateTimeOffset.Now;
         Date = now.Date;
         TimeOfDay = now.TimeOfDay;
@@ -190,8 +190,6 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
         
-        Console.WriteLine("meow");
-
         Date = new DateTimeOffset(d.Date, TimeSpan.Zero);
         TimeOfDay = d.TimeOfDay;
     }
@@ -270,7 +268,6 @@ public partial class MainViewModel : ViewModelBase
 
             if (!tempMatches.SequenceEqual(AlignmentMatches))
             {
-                Console.WriteLine("WHYYYY");
                 AlignmentMatches = tempMatches;
             }
         }
