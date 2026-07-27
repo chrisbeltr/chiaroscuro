@@ -16,10 +16,17 @@
 
     <!-- Two columns: a fixed-width scrollable parameter panel on the left, and the
          (for now, text-only - the 3D viewport arrives in Phase 3) result area on the right. -->
-    <Grid ColumnDefinitions="*,6,*">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MaxWidth="550" />
+            <ColumnDefinition Width="6" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
         <ScrollViewer Grid.Column="0" Margin="12, 12, 3, 12">
             <StackPanel Spacing="12">
+                
+                <TextBlock Margin="4, 0, 0, -8" FontSize="24" FontWeight="Bold">Chiaroscuro</TextBlock>
 
                 <Border Classes="panel" Padding="12">
                     <StackPanel Spacing="8">
