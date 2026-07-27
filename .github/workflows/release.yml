@@ -10,7 +10,7 @@ on:
         description: 'Release tag to build and publish (e.g. v1.0.0)'
         required: true
       notes:
-        description: 'Release notes (optional; auto-generated notes are appended after these)'
+        description: 'Release notes (optional)'
         required: false
 
 permissions:
@@ -117,7 +117,7 @@ jobs:
           TAG: ${{ steps.vars.outputs.tag }}
           NOTES: ${{ github.event.inputs.notes }}
         run: |
-          args=(--title "Chiaroscuro $TAG" --generate-notes)
+          args=(--title "Chiaroscuro $TAG")
           if [ -n "$NOTES" ]; then
             args+=(--notes "$NOTES")
           fi
