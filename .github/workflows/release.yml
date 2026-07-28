@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 jobs:
-  build-desktop:
+  build-desktop-zip:
     strategy:
       fail-fast: false
       matrix:
@@ -57,12 +57,24 @@ jobs:
         working-directory: publish/${{ matrix.rid }}
         run: tar -czf ../../Chiaroscuro-${{ matrix.rid }}.tar.gz .
 
+      - name: Publish standalone desktop binaries (${{ matrix.rid }})
+        run: >
+          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -o publish/standalone/${{ matrix.rid }}
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:AssemblyName=Chiaroscuro-${{ matrix.rid }}-standalone
+
       - uses: actions/upload-artifact@v4
         with:
           name: Chiaroscuro-${{ matrix.rid }}
           path: |
             Chiaroscuro-${{ matrix.rid }}.zip
             Chiaroscuro-${{ matrix.rid }}.tar.gz
+            publish/standalone/*
           if-no-files-found: ignore
 
   build-wasm:
