@@ -17,7 +17,7 @@ permissions:
   contents: write
 
 jobs:
-  build-desktop-zip:
+  build-desktop:
     strategy:
       fail-fast: false
       matrix:
