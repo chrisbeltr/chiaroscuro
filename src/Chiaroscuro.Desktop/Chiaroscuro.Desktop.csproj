@@ -2,6 +2,11 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>Chiaroscuro-$(RuntimeIdentifier)</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Standalone)' == 'true'">
+    <AssemblyName>Chiaroscuro-$(RuntimeIdentifier)-standalone</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -66,7 +66,7 @@ jobs:
           -o publish/standalone/${{ matrix.rid }}
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:AssemblyName=Chiaroscuro-${{ matrix.rid }}-standalone
+          -p:Standalone=true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -74,7 +74,8 @@ jobs:
           path: |
             Chiaroscuro-${{ matrix.rid }}.zip
             Chiaroscuro-${{ matrix.rid }}.tar.gz
-            publish/standalone/*
+            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}
+            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}.exe
           if-no-files-found: ignore
 
   build-wasm:
