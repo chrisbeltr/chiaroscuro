@@ -68,12 +68,20 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -p:Standalone=true
 
+      - name: Upload zipped artifacts
       - uses: actions/upload-artifact@v4
         with:
           name: Chiaroscuro-${{ matrix.rid }}
           path: |
             Chiaroscuro-${{ matrix.rid }}.zip
             Chiaroscuro-${{ matrix.rid }}.tar.gz
+          if-no-files-found: ignore
+
+      - name: Upload standalone artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chiaroscuro-${{ matrix.rid }}-standalone
+          path: |
             publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}
             publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}.exe
           if-no-files-found: ignore
