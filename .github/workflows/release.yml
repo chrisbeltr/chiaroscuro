@@ -69,7 +69,7 @@ jobs:
           -p:Standalone=true
 
       - name: Check inside standalone directories
-      - run: ls publish/standalone/${{ matrix.rid }}
+        run: ls publish/standalone/${{ matrix.rid }}
 
       - name: Upload zipped artifacts
         uses: actions/upload-artifact@v4
