@@ -69,7 +69,7 @@ jobs:
           -p:Standalone=true
 
       - name: Upload zipped artifacts
-      - uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: Chiaroscuro-${{ matrix.rid }}
           path: |
@@ -78,7 +78,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload standalone artifacts
-      - uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: Chiaroscuro-${{ matrix.rid }}-standalone
           path: |
