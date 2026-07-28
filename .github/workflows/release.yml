@@ -68,9 +68,6 @@ jobs:
           -p:IncludeNativeLibrariesForSelfExtract=true
           -p:Standalone=true
 
-      - name: Check inside standalone directories
-        run: ls publish/standalone/${{ matrix.rid }}
-
       - name: Upload zipped artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -85,8 +82,8 @@ jobs:
         with:
           name: Chiaroscuro-${{ matrix.rid }}-standalone
           path: |
-            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}
-            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}.exe
+            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}-standalone
+            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}-standalone.exe
           if-no-files-found: ignore
 
   build-wasm:
