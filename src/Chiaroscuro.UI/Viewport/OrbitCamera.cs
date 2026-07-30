@@ -26,10 +26,10 @@ public sealed class OrbitCamera
     public double Pitch { get; private set; }
     public double Distance { get; private set; }
 
-    public OrbitCamera(Vector3 target, double yaw = 0.0, double pitch = 0.5, double distance = 8.0)
+    public OrbitCamera(Vector3 target, double? yaw = null, double pitch = 0.5, double distance = 8.0)
     {
         Target = target;
-        Yaw = yaw;
+        Yaw = yaw ?? double.DegreesToRadians(180);
         Pitch = Math.Clamp(pitch, -MaxPitchRadians, MaxPitchRadians);
         Distance = Math.Clamp(distance, MinDistance, MaxDistance);
     }

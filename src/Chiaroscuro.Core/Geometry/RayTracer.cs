@@ -55,7 +55,9 @@ public static class RayTracer
     {
         // The sun unit vector points FROM the room TOWARD the sun. Light itself travels
         // the opposite way - into the room - which is exactly spec §3.2's -S_v.
-        var lightDirection = -sunPosition.ToUnitVector();
+        // ToRoomSpaceDirection rotates the world-space sun vector into room-local coordinates
+        // so that a rotated room still receives light from the correct direction.
+        var lightDirection = -room.ToRoomSpaceDirection(sunPosition.ToUnitVector());
         var centerRay = new Ray(window.GetCenter(room), lightDirection);
 
         if (FindNearestSurface(room, window.Wall, centerRay) is not { } nearestHit)

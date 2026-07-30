@@ -16,8 +16,23 @@ namespace Chiaroscuro.Core.Geometry;
 /// This is a deliberate design choice, not something the spec pins down.</item>
 /// </list>
 /// </summary>
-public readonly record struct Room(double Width, double Length, double Height)
+public readonly record struct Room(double Width, double Length, double Height, double RotationDegrees = 0)
 {
+    /// <summary>
+    /// Transforms a direction vector from world space (where +Y = true North) into this
+    /// room's local coordinate space, accounting for the room's rotation relative to true North.
+    /// Use this to convert the sun direction before any ray tracing or alignment comparisons.
+    /// </summary>
+    public Vector3 ToRoomSpaceDirection(Vector3 worldDirection)
+    {
+        var θ = double.DegreesToRadians(RotationDegrees);
+        return new Vector3(
+            worldDirection.X * Math.Cos(θ) - worldDirection.Y * Math.Sin(θ),
+            worldDirection.X * Math.Sin(θ) + worldDirection.Y * Math.Cos(θ),
+            worldDirection.Z);
+    }
+
+
     /// <summary>The infinite plane containing the given surface (not clipped to the room's bounds).</summary>
     public Plane GetPlane(RoomSurface surface) => surface switch
     {

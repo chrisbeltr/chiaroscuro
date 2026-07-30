@@ -50,7 +50,8 @@ public static class InverseAlignmentSolver
             var zonedDateTime = (startInstant + elapsed).InZone(timeZone);
 
             var sunPosition = SolarCalculator.Calculate(latitudeDegrees, longitudeDegrees, zonedDateTime);
-            var angleDifferenceDegrees = double.RadiansToDegrees(sunPosition.ToUnitVector().AngleTo(targetDirection));
+            var sunInRoomSpace = room.ToRoomSpaceDirection(sunPosition.ToUnitVector());
+            var angleDifferenceDegrees = double.RadiansToDegrees(sunInRoomSpace.AngleTo(targetDirection));
 
             if (angleDifferenceDegrees <= toleranceDegrees)
             {

@@ -52,6 +52,9 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private decimal? _roomHeight = 3m;
 
+    [ObservableProperty]
+    private decimal? _roomRotationDegrees = 0m;
+
     // --- Window ------------------------------------------------------------------------
     // South is an arbitrary starting default, not a spec requirement.
     [ObservableProperty]
@@ -145,6 +148,7 @@ public partial class MainViewModel : ViewModelBase
     partial void OnRoomWidthChanged(decimal? value) => Recalculate();
     partial void OnRoomLengthChanged(decimal? value) => Recalculate();
     partial void OnRoomHeightChanged(decimal? value) => Recalculate();
+    partial void OnRoomRotationDegreesChanged(decimal? value) => Recalculate();
     partial void OnWindowWallChanged(WallOrientation value) => Recalculate();
     partial void OnWindowHorizontalOffsetChanged(decimal? value) => Recalculate();
     partial void OnWindowSillHeightChanged(decimal? value) => Recalculate();
@@ -222,6 +226,7 @@ public partial class MainViewModel : ViewModelBase
             RoomWidth is not { } roomWidth ||
             RoomLength is not { } roomLength ||
             RoomHeight is not { } roomHeight ||
+            RoomRotationDegrees is not { } roomRotationDegrees ||
             WindowHorizontalOffset is not { } windowHorizontalOffset ||
             WindowSillHeight is not { } windowSillHeight ||
             WindowWidth is not { } windowWidth ||
@@ -239,7 +244,7 @@ public partial class MainViewModel : ViewModelBase
 
         var sunPosition = SolarCalculator.Calculate((double)latitude, (double)longitude, instant.InUtc());
 
-        Room = new Room((double)roomWidth, (double)roomLength, (double)roomHeight);
+        Room = new Room((double)roomWidth, (double)roomLength, (double)roomHeight, (double)roomRotationDegrees);
         Window = new Window(WindowWall, (double)windowHorizontalOffset, (double)windowSillHeight, (double)windowWidth, (double)windowHeight);
         Illumination = RayTracer.Trace(Room, Window, sunPosition);
 

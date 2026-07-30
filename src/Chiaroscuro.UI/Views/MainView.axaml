@@ -68,7 +68,7 @@
                     <StackPanel Spacing="8">
                         <TextBlock Text="Room" FontWeight="Bold" />
 
-                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Width (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
                             <NumericUpDown Grid.Row="0" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding RoomWidth}" Increment="0.1" FormatString="F2" />
@@ -77,9 +77,13 @@
                             <NumericUpDown Grid.Row="1" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding RoomLength}" Increment="0.1" FormatString="F2" />
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Height (m)" VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Height (m)" VerticalAlignment="Center" Margin="0,0,8,4" />
+                            <NumericUpDown Grid.Row="2" Grid.Column="1" Margin="0,0,0,4"
                                            Value="{Binding RoomHeight}" Increment="0.1" FormatString="F2" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Rotation (°)" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <NumericUpDown Grid.Row="3" Grid.Column="1"
+                                           Value="{Binding RoomRotationDegrees}" Increment="5" FormatString="F1" />
                         </Grid>
                     </StackPanel>
                 </Border>

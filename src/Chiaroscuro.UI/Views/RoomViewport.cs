@@ -204,6 +204,74 @@ public sealed class RoomViewport : Control
                         break;
                 }
             }
+
+            DrawAxisGizmo(canvas, paint, camera, (float)Bounds.Width, (float)Bounds.Height);
+        }
+
+        /// <summary>
+        /// Draws a Blender-style axis gizmo in the bottom-right corner. Each axis arrow is
+        /// projected from world space through the view matrix so the gizmo rotates in sync
+        /// with the orbit camera, always showing which way N/E/U point in the current view.
+        /// Axes pointing toward the viewer are drawn at full opacity; receding axes are dimmed.
+        /// </summary>
+        private static void DrawAxisGizmo(SKCanvas canvas, SKPaint paint, OrbitCamera camera, float width, float height)
+        {
+            const float radius = 40f;
+            var cx = width - 65f;
+            var cy = height - 65f;
+
+            var viewMatrix = camera.GetViewMatrix();
+
+            var axes = new[]
+            {
+                (Dir: new System.Numerics.Vector3(1, 0, 0), Color: new SKColor(220, 80,  80),  Label: "E"),
+                (Dir: new System.Numerics.Vector3(0, 1, 0), Color: new SKColor(80,  200, 80),  Label: "N"),
+                (Dir: new System.Numerics.Vector3(0, 0, 1), Color: new SKColor(80,  130, 220), Label: "U"),
+            };
+
+            // Project each axis direction into view space; sort back-to-front so foreground
+            // axes overdraw receding ones (positive ViewZ = toward viewer = in front).
+            var screenAxes = axes
+                .Select(a =>
+                {
+                    var v = System.Numerics.Vector3.TransformNormal(a.Dir, viewMatrix);
+                    return (
+                        a.Color,
+                        a.Label,
+                        Tx: cx + v.X * radius,
+                        Ty: cy - v.Y * radius,  // invert Y: view +Y = up = screen -Y
+                        ViewZ: v.Z
+                    );
+                })
+                .OrderBy(a => a.ViewZ)
+                .ToList();
+
+            // Semi-transparent background so the gizmo reads against any scene content.
+            paint.Style = SKPaintStyle.Fill;
+            paint.Color = new SKColor(0x0C, 0x0A, 0x1D, 180);
+            canvas.DrawCircle(cx, cy, radius + 18f, paint);
+
+            // Center origin dot
+            paint.Color = new SKColor(200, 200, 200, 180);
+            canvas.DrawCircle(cx, cy, 3f, paint);
+
+            foreach (var (color, label, tx, ty, viewZ) in screenAxes)
+            {
+                // Dim axes that recede into the screen to hint at depth without cluttering.
+                byte alpha = viewZ < 0 ? (byte)90 : (byte)230;
+                var axisColor = new SKColor(color.Red, color.Green, color.Blue, alpha);
+
+                paint.Style = SKPaintStyle.Stroke;
+                paint.StrokeWidth = 2f;
+                paint.Color = axisColor;
+                canvas.DrawLine(cx, cy, tx, ty, paint);
+
+                paint.Style = SKPaintStyle.Fill;
+                canvas.DrawCircle(tx, ty, 4f, paint);
+
+                using var font = new SKFont { Size = 11f };
+                canvas.DrawText(label, tx + 6f, ty + 4f, SKTextAlign.Left, font, paint);
+            }
         }
 
         /// <summary>Projects every primitive's world-space points to screen space, drops any
