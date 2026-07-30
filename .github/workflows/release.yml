@@ -12,6 +12,11 @@ on:
       notes:
         description: 'Release notes (optional)'
         required: false
+      generate_notes:
+        description: 'Check this box to automatically generate notes'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -137,9 +142,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.vars.outputs.tag }}
           NOTES: ${{ github.event.inputs.notes }}
+          GEN_NOTES: ${{ github.event.inputs.generate_notes }}
         run: |
           args=(--title "Chiaroscuro $TAG")
           if [ -n "$NOTES" ]; then
             args+=(--notes "$NOTES")
+          fi
+          if [ -n "$GEN_NOTES" ]; then
+            args+=(--generate-notes)
           fi
           gh release create "$TAG" artifacts/* "${args[@]}"
