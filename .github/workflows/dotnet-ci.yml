@@ -34,9 +34,9 @@ jobs:
       - name: Test
         run: dotnet test Chiaroscuro.slnx -c Release --no-build --logger "console;verbosity=normal"
 
-      - name: Publish self-contained desktop binary (${{ matrix.rid }})
+      - name: Publish self-contained API sanity check (${{ matrix.rid }})
         run: >
-          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
+          dotnet publish src/Chiaroscuro.Api/Chiaroscuro.Api.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained true
@@ -44,6 +44,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Chiaroscuro-${{ matrix.rid }}
+          name: Chiaroscuro.Api-${{ matrix.rid }}
           path: publish/${{ matrix.rid }}
           if-no-files-found: error
