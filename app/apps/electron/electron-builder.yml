@@ -26,6 +26,7 @@ mac:
   icon: build/icon.icns
   category: public.app-category.productivity
 linux:
+  executableName: "chiaroscuro-electron"
   target: AppImage
   icon: build/icon.png
   category: Utility
