@@ -1,0 +1,24 @@
+{
+  "name": "@chiaroscuro/electron",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Chiaroscuro desktop shell - Electron sidecar host for the Chiaroscuro.Api backend and React renderer.",
+  "author": "Chiaroscuro",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "npm run build && cross-env CHIAROSCURO_DEV_SERVER_URL=http://localhost:5173 electron .",
+    "start": "npm run build && electron .",
+    "package": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "tree-kill": "^1.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "cross-env": "^10.1.0",
+    "electron": "43.4.1",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.9.3"
+  }
+}

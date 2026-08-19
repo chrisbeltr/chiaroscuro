@@ -1,0 +1,15 @@
+{
+  "name": "chiaroscuro-app",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/renderer",
+    "apps/electron"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/renderer",
+    "build": "npm run build --workspace apps/renderer",
+    "test": "npm run test --workspace apps/renderer",
+    "lint": "npm run lint --workspace apps/renderer"
+  }
+}
