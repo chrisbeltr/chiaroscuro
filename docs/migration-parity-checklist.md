@@ -91,3 +91,6 @@ duplication of what those automated tests already cover.
   attempted in this environment (Windows-only dev machine) - do that as part of Phase 7's
   CI rework (matrix build), or manually on the relevant OS, before relying on this
   checklist as full multi-platform sign-off.
+
+**Update (2026-08-19):** the migration merged (#6) with the above gates met, followed by
+a version bump to 2.0.0 (#7) marking the new stack.
