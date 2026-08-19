@@ -7,64 +7,90 @@ lands — on the floor or on an interior wall. It also solves the problem in rev
 target point in the room and it will search the year for every date and time the sun aligns
 closely enough with that point to light it up.
 
-Built with [Avalonia](https://avaloniaui.net/), the same UI runs unmodified as a native desktop
-app (Windows/Linux/macOS) and as a WebAssembly app in the browser.
+Built as a stateless ASP.NET backend (all calculation logic) paired with a React + Three.js
+frontend, shipped either as a self-contained Electron desktop app (Windows/Linux/macOS, with the
+backend bundled as a local sidecar process) or as a plain web deployment of the same backend and a
+static frontend build.
 
 ## Running the project
 
-Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download).
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) and [Node.js](https://nodejs.org/).
 
-### Desktop
-
-```bash
-dotnet run --project src/Chiaroscuro.Desktop
-```
-
-### Browser (WebAssembly)
+### Backend (ASP.NET API)
 
 ```bash
-dotnet workload install wasm-tools   # one-time
-dotnet run --project src/Chiaroscuro.Wasm
+dotnet run --project src/Chiaroscuro.Api
 ```
 
-This starts a local dev server and opens the app in your default browser.
+Starts the API on `http://127.0.0.1:5259` (see `src/Chiaroscuro.Api/Properties/launchSettings.json`).
+
+### Frontend (React SPA, dev server)
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+Starts a Vite dev server at `http://localhost:5173` that talks to the API above.
+
+### Desktop (Electron)
+
+With the API and the Vite dev server both running (see above):
+
+```bash
+cd app/apps/electron
+npm run dev
+```
 
 ## Building an executable
 
-### Desktop
+### Backend, self-contained per platform
 
 ```bash
-dotnet publish src/Chiaroscuro.Desktop -c Release -r <RID> --self-contained
+dotnet publish src/Chiaroscuro.Api -c Release -r <RID> --self-contained -p:PublishSingleFile=true -o app/apps/electron/resources/backend/<RID>
 ```
 
 Replace `<RID>` with your target runtime identifier, e.g. `win-x64`, `linux-x64`, or `osx-arm64`.
-The published executable is written to
-`src/Chiaroscuro.Desktop/bin/Release/net10.0/<RID>/publish/`.
 
-### Browser (static site)
+### Frontend
 
 ```bash
-dotnet workload install wasm-tools   # one-time
-dotnet publish src/Chiaroscuro.Wasm -c Release
+cd app/apps/renderer
+npm run build
 ```
 
-The output in `src/Chiaroscuro.Wasm/bin/Release/net10.0-browser/publish/wwwroot/` is a static
-site that can be hosted anywhere.
+Produces a static site in `app/apps/renderer/dist/` that can be hosted anywhere, or bundled into
+the Electron package below.
+
+### Packaged Electron app
+
+With both of the above built:
+
+```bash
+cd app/apps/electron
+npm run build
+npm run package
+```
+
+Produces a platform-specific installer in `app/apps/electron/out/` (NSIS on Windows, DMG on macOS,
+AppImage on Linux) with the self-contained backend bundled as a sidecar process.
 
 ## Features
 
 - **Date and time control** — pick any date and time via the UI's date/time pickers, or hit
   **Now** to jump straight to the current moment. Location and UTC offset can be entered by hand
-  or filled in automatically from an IP-based lookup (desktop) or the browser's geolocation API.
-- **Room and window modeling** — define a rectangular room by width, length, and height, and set
-  a window's wall, horizontal offset, sill height, width, and height. The 3D viewport renders the
-  room and window live as you adjust these values, and re-traces the sun's ray through the window
-  on every change to show where the light currently lands.
+  or filled in automatically — via an IP-based lookup (Electron) or the browser's geolocation API
+  (hosted web).
+- **Room and window modeling** — define a rectangular room by width, length, height, and rotation,
+  and set a window's wall, horizontal offset, sill height, width, and height. The 3D viewport
+  renders the room and window live as you adjust these values, and re-traces the sun's ray through
+  the window on every change to show where the light currently lands.
 - **Solar position target finding (inverse solver)** — instead of picking a time and seeing where
-  the light falls, pick a target point in the room (by dragging or entering coordinates) and a
-  tolerance in degrees, and Chiaroscuro sweeps the entire year in 15-minute steps to find every
-  date and time the sun's direction aligns within that tolerance of the target. Matches are listed
-  as cards you can click to jump the date/time picker straight to that moment.
+  the light falls, pick a target point in the room and a tolerance in degrees, and Chiaroscuro
+  sweeps the entire year in 15-minute steps to find every date and time the sun's direction aligns
+  within that tolerance of the target. Matches are listed as cards you can click to jump the
+  date/time picker straight to that moment.
 - **Accurate solar positioning** — sun elevation and azimuth are computed with the Meeus
   low-precision solar position algorithm (the same formula chain behind NOAA's solar calculator),
   accurate to roughly ±0.01°.
@@ -73,13 +99,18 @@ site that can be hosted anywhere.
 
 | Project | Description |
 |---|---|
-| `Chiaroscuro.Core` | Platform-independent geometry, solar position math, and the inverse alignment solver. |
-| `Chiaroscuro.UI` | Shared Avalonia UI (views, view models, 3D viewport) used by both app heads. |
-| `Chiaroscuro.Desktop` | Native desktop app head (Windows/Linux/macOS), with IP-based geolocation. |
-| `Chiaroscuro.Wasm` | Browser app head (WebAssembly), with browser geolocation. |
+| `src/Chiaroscuro.Core` | Platform-independent geometry, solar position math, and the inverse alignment solver. |
+| `src/Chiaroscuro.Api` | Stateless ASP.NET minimal API exposing `Chiaroscuro.Core`'s calculations over HTTP. |
+| `app/apps/renderer` | React + Three.js (react-three-fiber) single-page app. |
+| `app/apps/electron` | Electron desktop shell that spawns `Chiaroscuro.Api` as a local sidecar process. |
 
 ## Running tests
 
 ```bash
 dotnet test
+```
+
+```bash
+cd app
+npm run test
 ```

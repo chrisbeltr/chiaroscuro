@@ -22,19 +22,23 @@ permissions:
   contents: write
 
 jobs:
-  build-desktop:
+  build-electron:
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             rid: linux-x64
+            electronFlags: --linux --x64
           - os: windows-latest
             rid: win-x64
+            electronFlags: --win --x64
           - os: macos-latest
             rid: osx-x64
+            electronFlags: --mac --x64
           - os: macos-latest
             rid: osx-arm64
+            electronFlags: --mac --arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -43,84 +47,47 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Publish self-contained desktop binary (${{ matrix.rid }})
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Publish self-contained backend sidecar (${{ matrix.rid }})
         run: >
-          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
+          dotnet publish src/Chiaroscuro.Api/Chiaroscuro.Api.csproj
           -c Release
           -r ${{ matrix.rid }}
           --self-contained true
-          -o publish/${{ matrix.rid }}
-
-      - name: Package (zip, Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        working-directory: publish/${{ matrix.rid }}
-        run: Compress-Archive -Path * -DestinationPath ../../Chiaroscuro-${{ matrix.rid }}.zip
-
-      - name: Package (tar.gz, Linux/macOS)
-        if: runner.os != 'Windows'
-        working-directory: publish/${{ matrix.rid }}
-        run: tar -czf ../../Chiaroscuro-${{ matrix.rid }}.tar.gz .
-
-      - name: Publish standalone desktop binaries (${{ matrix.rid }})
-        run: >
-          dotnet publish src/Chiaroscuro.Desktop/Chiaroscuro.Desktop.csproj
-          -c Release
-          -r ${{ matrix.rid }}
-          --self-contained true
-          -o publish/standalone/${{ matrix.rid }}
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:Standalone=true
+          -o app/apps/electron/resources/backend/${{ matrix.rid }}
 
-      - name: Upload zipped artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Chiaroscuro-${{ matrix.rid }}
-          path: |
-            Chiaroscuro-${{ matrix.rid }}.zip
-            Chiaroscuro-${{ matrix.rid }}.tar.gz
-          if-no-files-found: ignore
+      - name: Install frontend dependencies
+        working-directory: app
+        run: npm ci
 
-      - name: Upload standalone artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Chiaroscuro-${{ matrix.rid }}-standalone
-          path: |
-            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}-standalone
-            publish/standalone/${{ matrix.rid }}/Chiaroscuro-${{ matrix.rid }}-standalone.exe
-          if-no-files-found: ignore
+      - name: Build renderer
+        working-directory: app
+        run: npm run build --workspace apps/renderer
 
-  build-wasm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      - name: Build Electron main/preload
+        working-directory: app
+        run: npm run build --workspace apps/electron
 
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Install wasm-tools workload
-        run: dotnet workload install wasm-tools
-
-      - name: Publish
-        run: >
-          dotnet publish src/Chiaroscuro.Wasm/Chiaroscuro.Wasm.csproj
-          -c Release
-          -o publish
-
-      - name: Package
-        working-directory: publish/wwwroot
-        run: zip -r ../../Chiaroscuro-wasm.zip .
+      - name: Package Electron app (${{ matrix.rid }})
+        working-directory: app/apps/electron
+        run: npx electron-builder ${{ matrix.electronFlags }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Chiaroscuro-wasm
-          path: Chiaroscuro-wasm.zip
+          name: Chiaroscuro-${{ matrix.rid }}
+          path: |
+            app/apps/electron/out/*.exe
+            app/apps/electron/out/*.dmg
+            app/apps/electron/out/*.AppImage
           if-no-files-found: error
 
   release:
-    needs: [build-desktop, build-wasm]
+    needs: [build-electron]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

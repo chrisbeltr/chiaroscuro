@@ -1,0 +1,110 @@
+/* Ported 1:1 from Chiaroscuro.UI/Themes/ChiaroscuroTheme.axaml's fixed dark palette. There is
+   no light-mode variant to support here - the Avalonia app hard-pinned RequestedThemeVariant
+   to Dark and never followed OS theme, and this app makes the same deliberate choice. The
+   amber/gold family is reserved by convention for "this represents light" elements only. */
+:root {
+  /* Ensures native form controls (date/time picker icons and popups, number-input spinners)
+     render with a dark-appropriate palette - without this, Chromium paints them for a light
+     background by default, making the date/time picker icons invisible against this theme. */
+  color-scheme: dark;
+
+  --color-background: #0c0a1d;
+  --color-panel: #120e2a;
+  --color-border: #2e235a;
+  --color-foreground: #9491c0;
+  --color-amber: #f59e0b;
+  --color-gold: #fbbf24;
+  --color-gold-bg: #402e00;
+  --color-sun-yellow: #fde047;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.matchCard {
+  background: var(--color-gold-bg);
+  border: 1px solid var(--color-gold);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--color-gold);
+  min-width: 140px;
+  flex: 0 0 auto;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.matchCard-date {
+  font-weight: 600;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+input,
+select {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+button {
+  background: var(--color-panel);
+  color: var(--color-amber);
+  border: 1px solid var(--color-amber);
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button:hover {
+  background: var(--color-gold-bg);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+}

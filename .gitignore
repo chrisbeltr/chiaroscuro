@@ -10,3 +10,12 @@ obj/
 
 # OS cruft
 .DS_Store
+
+# Node / npm workspace (app/)
+node_modules/
+app/apps/renderer/dist/
+app/apps/electron/dist/
+app/apps/electron/out/
+app/apps/electron/resources/backend/
+*.tsbuildinfo
+*.log

@@ -1,0 +1,8 @@
+.room-viewport {
+  flex: 1;
+  min-height: 320px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-background);
+}

@@ -1,0 +1,36 @@
+name: Electron CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Test (vitest)
+        working-directory: app
+        run: npm run test --workspace apps/renderer
+
+      - name: Typecheck + build (renderer)
+        working-directory: app
+        run: npm run build --workspace apps/renderer
+
+      - name: Typecheck + build (Electron main/preload)
+        working-directory: app
+        run: npm run build --workspace apps/electron

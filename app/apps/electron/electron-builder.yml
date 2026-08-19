@@ -1,0 +1,32 @@
+appId: com.chiaroscuro.app
+productName: Chiaroscuro
+directories:
+  buildResources: build
+  output: out
+# dist/main.js's __dirname resolves to <asar-root>/dist at runtime, and main.ts loads
+# "../renderer/index.html" relative to that - so the renderer's built output must land at
+# <asar-root>/renderer, matching the `to: renderer` mapping below.
+files:
+  - from: dist
+    to: dist
+  - from: ../renderer/dist
+    to: renderer
+  - package.json
+# Per-RID self-contained Chiaroscuro.Api publishes, placed here by a `dotnet publish`
+# step (see the migration plan's CI/CD section) before running `npm run package`. Not
+# checked into source control - see the root .gitignore entry for this path.
+extraResources:
+  - from: resources/backend
+    to: backend
+win:
+  target: nsis
+  icon: build/icon.ico
+mac:
+  target: dmg
+  icon: build/icon.icns
+  category: public.app-category.productivity
+linux:
+  executableName: "chiaroscuro-electron"
+  target: AppImage
+  icon: build/icon.png
+  category: Utility
