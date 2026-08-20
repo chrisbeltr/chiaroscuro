@@ -115,7 +115,7 @@ jobs:
           if [ -n "$NOTES" ]; then
             args+=(--notes "$NOTES")
           fi
-          if [ -n "$GEN_NOTES" ]; then
+          if [ "$GEN_NOTES" = "true" ]; then
             args+=(--generate-notes)
           fi
           gh release create "$TAG" artifacts/* "${args[@]}"
