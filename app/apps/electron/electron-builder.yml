@@ -1,5 +1,11 @@
 appId: com.chiaroscuro.app
 productName: Chiaroscuro
+# Explicit so every platform's installer clearly states OS and architecture in the
+# filename itself (e.g. Chiaroscuro-2.0.0-win-x64.exe, Chiaroscuro-2.0.0-mac-arm64.dmg)
+# rather than relying on the file extension alone - and so the two mac builds (x64 vs
+# arm64) don't collide, which the default "${productName}-${version}-${arch}.${ext}"
+# pattern would risk without ${os} in it.
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 directories:
   buildResources: build
   output: out
