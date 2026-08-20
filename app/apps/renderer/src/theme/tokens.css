@@ -20,6 +20,8 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 html,
@@ -33,6 +35,24 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-foreground);
 }
 
 h2 {
